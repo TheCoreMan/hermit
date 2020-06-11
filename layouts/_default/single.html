@@ -6,6 +6,12 @@
 		<style>.bg-img {background-image: url('{{. | absURL}}');}</style>
 		{{- end -}}
 	{{- end -}}
+	{{ if .Params.scripts }}
+		{{- range first 1 .Params.scripts -}}
+			<script>console.log("Found scripts. Adding the {{. | absURL}} script");</script>
+			<script type="text/javascript" src="{{. | absURL}}"></script>
+		{{- end -}}
+	{{ end }}
 {{ end }}
 
 {{ define "header" }}

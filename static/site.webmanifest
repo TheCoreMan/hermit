@@ -1,6 +1,6 @@
 {
-    "name": "",
-    "short_name": "",
+    "name": "mrnice.dev",
+    "short_name": "mrnice.dev",
     "icons": [
         {
             "src": "/android-chrome-192x192.png",
@@ -8,12 +8,12 @@
             "type": "image/png"
         },
         {
-            "src": "/android-chrome-384x384.png",
-            "sizes": "384x384",
+            "src": "/android-chrome-256x256.png",
+            "sizes": "256x256",
             "type": "image/png"
         }
     ],
-    "theme_color": "#ffffff",
-    "background_color": "#ffffff",
+    "theme_color": "#2c3e50",
+    "background_color": "#2c3e50",
     "display": "standalone"
 }

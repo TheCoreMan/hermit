@@ -16,10 +16,20 @@
 			<ul class="posts-list">
 				{{- range .Pages }}
 				<li class="post-item">
-					<a href="{{.Permalink}}">
-						<span class="post-title">{{.Title}}</span>
-						<span class="post-day">{{ .Date.Format .Site.Params.dateformShort }}</span>
-					</a>
+					<!-- If external link exists in post matter -->
+            		{{ if isset .Params "affiliatelink" }}
+                		<a href="{{ .Params.affiliatelink }}" target="_blank">
+							<span class="post-title">↗ {{.Title}}</span>
+							<span class="post-day">{{ .Date.Format .Site.Params.dateformShort }}</span>
+						</a>
+            		<!-- Else show internal post page -->
+            		{{else}}
+                		<a href="{{.Permalink}}">
+							<span class="post-title">{{.Title}}</span>
+							<span class="post-day">{{ .Date.Format .Site.Params.dateformShort }}</span>
+						</a>
+            		{{ end }}
+					
 				</li>
 				{{- end }}
 			</ul>
