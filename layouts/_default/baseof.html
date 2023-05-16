@@ -9,6 +9,17 @@
 	<meta name="theme-color" content="{{.}}">
 	<meta name="msapplication-TileColor" content="{{.}}">
 	{{- end }}
+	<!-- Partytown Setup -->
+	<script type="text/javascript">
+		partytown = {
+			forward: ['dataLayer.push']
+		};
+	</script>
+	<script type="text/javascript">
+		{{ $partytownJs := resources.Get "js/partytown.js" | js.Build | minify }}
+		{{- $partytownJs.Content | safeJS }}
+	</script>
+	<!-- End Partytown -->
 	{{- partial "structured-data.html" . }}
 	{{- partial "favicons.html" }}
 	<title>{{.Title}}</title>
@@ -19,12 +30,11 @@
 	<link rel="stylesheet" href="{{ $style.Permalink }}" {{ printf "integrity=%q" $style.Data.Integrity | safeHTMLAttr }} crossorigin="anonymous">
 	{{- block "head" . -}}{{- end }}
 	{{- range .Site.Params.customCSS }}
-	<link rel="stylesheet" href="{{ . | absURL }}">
+	<link rel="stylesheet" href="{{ . | absURL }}" media="print" onload="this.media='all'">
 	{{- end }}
 	{{- if templates.Exists "partials/extra-head.html" -}}
 	{{ partial "extra-head.html" . }}
 	{{- end }}
-
 </head>
 
 <body id="page">

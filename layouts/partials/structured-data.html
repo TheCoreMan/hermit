@@ -6,3 +6,11 @@
 	name="description"
 	content="{{ with .Description }}{{ . }}{{ else }}{{if .IsPage}}{{ .Summary }}{{ else }}{{ with .Site.Params.description }}{{ . }}{{ end }}{{ end }}{{ end -}}"
 />
+<script type="application/ld+json">
+	{
+		"@context": "https://schema.org",
+		"@type": "Organization",
+		"url": {{ .Site.BaseURL }},
+		"logo": {{ (print .Site.BaseURL .Site.Params.siteLogoRelPath) }},
+	}
+</script>
