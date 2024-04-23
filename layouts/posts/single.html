@@ -54,6 +54,10 @@
 				<h1>{{ .Title }}</h1>
 			</header>
 			<div class="content">
+				{{ if isset .Params "short" }}
+				<div class="short-disclaimer">
+					<p>{{ "> This is a [short 🩳](/posts/shorts/); a note that doesn't merit a full post. [See all shorts here](/tags/short)." | markdownify | safeHTML }}</p>
+				{{ end }}
 				{{ .Content | replaceRE "(<h[1-6] id=\"([^\"]+)\".+)(</h[1-6]+>)" `${1}<a href="#${2}" class="anchor" aria-hidden="true"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 7h3a5 5 0 0 1 5 5 5 5 0 0 1-5 5h-3m-6 0H6a5 5 0 0 1-5-5 5 5 0 0 1 5-5h3"></path><line x1="8" y1="12" x2="16" y2="12"></line></svg></a>${3}` | safeHTML }}
 			</div>
 			{{- if .Site.Params.relatedPosts }}
@@ -63,6 +67,10 @@
 			<footer class="post-info">
 				{{- with $.Param "author" }}
 				<p><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-feather"><path d="M20.24 12.24a6 6 0 0 0-8.49-8.49L5 10.5V19h8.5z"></path><line x1="16" y1="8" x2="2" y2="22"></line><line x1="17.5" y1="15" x2="9" y2="15"></line></svg>{{ . }}</p>
+				{{- end }}
+				<!-- Validate that if the post is a short, the .Params.Tags list contains the word "short". If it doesn't, raise an error. -->
+				{{- if and (isset .Params "short") (not (in .Params.tags "short" )) }}
+				{{ errorf "Post %s is marked as short, but is lacking the tag 'short'.\nThe tags I'm seeing are %v.\nAdd it to the tags, please." .Page.Path .Params.tags }}
 				{{- end }}
 				{{- with .Params.tags }}
 				<p>

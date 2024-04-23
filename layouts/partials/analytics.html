@@ -11,7 +11,7 @@ with .Site.GoogleAnalytics -}} {{ if hasPrefix . "G-"}}
 		window.dataLayer = window.dataLayer || [];
 		function gtag(){dataLayer.push(arguments);}
 		gtag('js', new Date());
-		gtag('config', '{{ . }}', { 'anonymize_ip': {{- $pc.AnonymizeIP -}} });
+		gtag('config', '{{ . }}', { 'anonymize_ip': false });
 	}
 </script>
 {{ else if hasPrefix . "UA-" }}

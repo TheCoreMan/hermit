@@ -10,7 +10,7 @@
 			{{ .Content }}
 		</div>
 		{{- end }}
-		{{- range .Data.Pages.GroupByDate "2006" }}
+		{{- range .Data.Pages.GroupByDate "200601" }}
 		<div class="posts-group">
 			<div class="post-year" id="{{ .Key }}">{{ .Key }}</div>
 			<ul class="posts-list">
@@ -25,7 +25,11 @@
             		<!-- Else show internal post page -->
             		{{else}}
                 		<a href="{{.Permalink}}">
+							{{ if isset .Params "short" }}
+							<span class="post-title">🩳 {{.Title}}</span>
+							{{ else }}
 							<span class="post-title">{{.Title}}</span>
+							{{ end }}
 							<span class="post-day">{{ .Date.Format .Site.Params.dateformShort }}</span>
 						</a>
             		{{ end }}
