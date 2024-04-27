@@ -3,6 +3,12 @@
 {{ end }}
 
 {{ define "main" }}
+{{- if .Site.BuildDrafts }}
+<!-- Add a blue banner on the top of the page saying "Draft mode", and make it "sticky" -->
+<div style="position: -webkit-sticky; position: sticky; top: 0; z-index: 1000;">
+	<p style="background-color: #007bff; color: white; text-align: center; padding: 0.5em;">Currently in Draft mode; not all shown posts are published!</p>
+</div>
+{{- end }}
 	<main class="site-main section-inner thin animated fadeIn faster">
 		<h1>{{ .Title }}</h1>
 		{{- if .Content }}
@@ -10,7 +16,7 @@
 			{{ .Content }}
 		</div>
 		{{- end }}
-		{{- range .Data.Pages.GroupByDate "200601" }}
+		{{- range .Data.Pages.GroupByDate "2006" }}
 		<div class="posts-group">
 			<div class="post-year" id="{{ .Key }}">{{ .Key }}</div>
 			<ul class="posts-list">

@@ -38,6 +38,12 @@
 </head>
 
 <body id="page">
+	{{- if hugo.IsServer }}
+<!-- Add a yellow banner on the top of the page saying "Local mode", and make it "sticky" -->
+<div style="position: -webkit-sticky; position: sticky; top: 0; z-index: 1001;">
+       <p style="background-color: orange; color: white; text-align: center; padding: 0.5em;">Local server mode</p>
+</div>
+{{- end }}
 	{{ block "header" . -}}{{ end -}}
 	{{ block "main" . -}}{{ end -}}
 	{{ block "footer" . -}}{{ end }}
