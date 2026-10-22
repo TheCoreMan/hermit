@@ -1,0 +1,39 @@
+{{- $dir := .images | default "images/pixel-lava" -}}
+{{- $required := slice "css/pixel-lava.css" "js/pixel-lava-loader.js" "js/pixel-lava.js" "js/pixel-lava-worker.js" -}}
+{{- range slice "256.webp" "128.webp" "64.webp" "32.webp" "original.webp" "alpha-mask.webp" "portrait-static.webp" "fallback.png" -}}
+ {{- $required = $required | append (printf "%s/%s" $dir .) -}}
+{{- end -}}
+{{- $invalid := slice -}}
+{{- range $required -}}
+ {{- $path := printf "static/%s" . -}}
+ {{- if not (os.FileExists $path) -}}
+  {{- $invalid = $invalid | append (printf "%s (missing)" $path) -}}
+ {{- else -}}
+  {{- $info := os.Stat $path -}}
+  {{- if or $info.IsDir (eq $info.Size 0) -}}
+   {{- $invalid = $invalid | append (printf "%s (empty or not a file)" $path) -}}
+  {{- end -}}
+ {{- end -}}
+{{- end -}}
+{{- if $invalid -}}
+ {{- errorf "pixel-lava: invalid required assets: %s. Supply the complete asset bundle before using this partial or shortcode." (delimit $invalid ", ") -}}
+{{- else -}}
+<pixel-lava{{ with .id }} id="{{ . }}"{{ end }}
+ data-speed="{{ .speed | default "1" }}" data-photo-size="{{ .photoSize | default "1" }}"
+ data-256="{{ printf "%s/256.webp" $dir | relURL }}"
+ data-128="{{ printf "%s/128.webp" $dir | relURL }}"
+ data-64="{{ printf "%s/64.webp" $dir | relURL }}"
+ data-32="{{ printf "%s/32.webp" $dir | relURL }}"
+ data-original="{{ printf "%s/original.webp" $dir | relURL }}"
+ data-mask="{{ printf "%s/alpha-mask.webp" $dir | relURL }}">
+ <picture>
+  <source type="image/webp" srcset="{{ printf "%s/portrait-static.webp" $dir | relURL }}">
+  <img src="{{ printf "%s/fallback.png" $dir | relURL }}" width="1024" height="1024"
+       fetchpriority="{{ if .id }}high{{ else }}auto{{ end }}" decoding="async"
+       alt="{{ .alt | default "Portrait of Shay Nehmad" }}">
+ </picture>
+</pixel-lava>
+{{- $code := printf "%s%s%s" (os.ReadFile "static/js/pixel-lava-loader.js") (os.ReadFile "static/js/pixel-lava.js") (os.ReadFile "static/js/pixel-lava-worker.js") -}}
+{{- $version := substr (sha256 $code) 0 12 -}}
+<script src="{{ "js/pixel-lava-loader.js" | relURL }}?v={{ $version }}" defer></script>
+{{- end -}}

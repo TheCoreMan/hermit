@@ -21,13 +21,17 @@
 	</script>
 	<!-- End Partytown -->
 	{{- partial "structured-data.html" . }}
-	{{- partial "favicons.html" }}
+	{{- partial "favicons.html" . }}
 	<title>{{.Title}}</title>
 	{{ range .AlternativeOutputFormats -}}
 		{{ printf `<link rel="%s" type="%s" href="%s" title="%s" />` .Rel .MediaType.Type .Permalink $.Title | safeHTML }}
 	{{ end -}}
 	{{ $style := resources.Get "scss/style.scss" | resources.ExecuteAsTemplate "css/style.css" . | toCSS | minify | fingerprint -}}
 	<link rel="stylesheet" href="{{ $style.Permalink }}" {{ printf "integrity=%q" $style.Data.Integrity | safeHTMLAttr }} crossorigin="anonymous">
+	{{- if or .IsHome (.HasShortcode "pixel-lava") }}
+	{{- $pixelLavaCSSVersion := substr (sha256 (os.ReadFile "static/css/pixel-lava.css")) 0 12 }}
+	<link rel="stylesheet" href="{{ "css/pixel-lava.css" | relURL }}?v={{ $pixelLavaCSSVersion }}">
+	{{- end }}
 	{{- block "head" . -}}{{- end }}
 	{{- range .Site.Params.customCSS }}
 	<link rel="stylesheet" href="{{ . | absURL }}" media="print" onload="this.media='all'">
