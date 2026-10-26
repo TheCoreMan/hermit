@@ -1,0 +1,27 @@
+{{/* Keep article-specific images; use branding only as the site-wide default.
+     Do not set params.images: Hermit also uses it as a full-page background. */}}
+{{- $path := .Site.Params.socialImage -}}
+{{- $custom := false -}}
+{{- $candidates := slice -}}
+{{- with .Params.featuredImg -}}{{ $candidates = $candidates | append . }}{{- end -}}
+{{- range .Params.images -}}{{ $candidates = $candidates | append . }}{{- end -}}
+{{- range $candidate := $candidates -}}
+  {{- if not $custom -}}
+    {{- $resource := $.Resources.GetMatch (strings.TrimPrefix "/" $candidate) -}}
+    {{- $remote := or (hasPrefix $candidate "https://") (hasPrefix $candidate "http://") -}}
+    {{- $local := fileExists (path.Join "static" (strings.TrimPrefix "/" $candidate)) -}}
+    {{- if or $resource $remote $local -}}
+      {{- $path = $candidate -}}
+      {{- $custom = true -}}
+    {{- end -}}
+  {{- end -}}
+{{- end -}}
+{{- $url := $path | absURL -}}
+{{- with .Resources.GetMatch $path -}}
+  {{- $url = .Permalink -}}
+{{- end -}}
+{{- $alt := .Site.Params.socialImageAlt -}}
+{{- if $custom -}}
+  {{- $alt = .Params.imageAlt | default .Title -}}
+{{- end -}}
+{{- return (dict "url" $url "alt" $alt "custom" $custom) -}}

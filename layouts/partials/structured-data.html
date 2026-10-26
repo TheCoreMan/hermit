@@ -1,7 +1,8 @@
 {{/* We use some Hugo built-in templates, you can find their source here: */}}
 {{/* https://github.com/gohugoio/hugo/tree/master/tpl/tplimpl/embedded/templates
-*/}} {{- template "_internal/schema.html" . }} {{- template
-"_internal/opengraph.html" . }} {{- partial "twitter_card.html" . }}
+*/}} {{- template "_internal/schema.html" . }}
+{{- partial "opengraph.html" . }}
+{{- partial "twitter_card.html" . }}
 <meta
 	name="description"
 	content="{{ with .Description }}{{ . }}{{ else }}{{if .IsPage}}{{ .Summary }}{{ else }}{{ with .Site.Params.description }}{{ . }}{{ end }}{{ end }}{{ end -}}"
@@ -11,6 +12,6 @@
 		"@context": "https://schema.org",
 		"@type": "Organization",
 		"url": {{ .Site.BaseURL }},
-		"logo": {{ (print .Site.BaseURL .Site.Params.siteLogoRelPath) }}
+		"logo": {{ .Site.Params.siteLogoRelPath | absURL }}
 	}
 </script>

@@ -78,6 +78,35 @@ If that's not enough, you can see [Overriding templates](#overriding-templates) 
 * Keep your regular pages in the `content` folder. To create a new page, run `hugo new page-title.md`
 * Keep your blog posts in the `content/posts` folder. To create a new post, run `hugo new posts/post-title.md`
 
+#### Pixel-lava portrait
+
+The homepage partial and `{{< pixel-lava >}}` shortcode require the site's
+complete static asset bundle. Missing files, empty files, or directories in
+place of files are **build errors** (`errorf`), not silently rendered broken
+portraits. No component markup is emitted for an incomplete bundle.
+
+Required under the site's `static/` directory:
+
+* `css/pixel-lava.css`
+* `js/pixel-lava-loader.js`, `js/pixel-lava.js`, `js/pixel-lava-worker.js`
+* In `images/pixel-lava/`: `256.webp`, `128.webp`, `64.webp`, `32.webp`,
+  `original.webp`, `alpha-mask.webp`, `portrait-static.webp`, `fallback.png`
+
+The optional `images` parameter selects another directory under `static/`;
+the same eight images are required there. Other shortcode parameters
+(`speed`, `photoSize`, `alt`) keep their defaults when omitted. Runtime
+network failures still use the component's static fallback; this validation
+prevents publishing an incomplete bundle in the first place.
+
+Run the isolated Hugo build regressions (requires Hugo and Python 3):
+
+```bash
+python3 tests/test_pixel_lava_assets.py
+```
+
+Tests use temporary sites and explicit build destinations, without touching
+the consuming site's content, static assets, or deployment directory.
+
 ### More customizations
 
 #### Overriding templates
