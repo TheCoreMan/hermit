@@ -1,9 +1,11 @@
 """Exercise real Hugo social metadata builds in isolated temporary sites."""
 
+import base64
 import hashlib
 from html.parser import HTMLParser
 from pathlib import Path
 import subprocess
+import struct
 import tempfile
 import unittest
 
@@ -25,6 +27,13 @@ class Head(HTMLParser):
 
 
 class SocialPreviewsTest(unittest.TestCase):
+    def gif(self, width, height):
+        # A valid GIF with a one-pixel image inside the requested logical canvas.
+        data = bytearray(base64.b64decode(
+            "R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7"))
+        data[6:10] = struct.pack("<HH", width, height)
+        return bytes(data)
+
     def fixture(self, image="images/card.png"):
         temporary = tempfile.TemporaryDirectory(prefix="hermit-social-")
         self.addCleanup(temporary.cleanup)
@@ -51,6 +60,7 @@ socialAnimationSize = 96
             write(f"layouts/partials/{name}.html",
                   (THEME / f"layouts/partials/{name}.html").read_text())
         write("static/images/card.png", "default image bytes")
+        (site / "static/images/small.gif").write_bytes(self.gif(96, 96))
         write("static/images/article.png", "specific article bytes")
         write("content/local.md",
               '+++\ntitle = "Local"\nfeaturedImg = "images/article.png"\n+++\n')
@@ -148,6 +158,59 @@ socialAnimationSize = 96
         self.assertEqual(head["og:image"],
                          ["https://example.test/collision/images/card.png"])
         self.assertEqual(head["twitter:image"], head["og:image"])
+
+    def test_full_size_animation_is_single_og_image_but_twitter_keeps_still(self):
+        site = self.fixture()
+        gif = self.gif(1200, 630)
+        (site / "static/images/small.gif").write_bytes(gif)
+        head = self.build(site)
+        digest = hashlib.sha256(gif).hexdigest()[:12]
+        self.assertEqual(head["og:image"],
+                         [f"https://example.test/images/small.gif?v={digest}"])
+        self.assertEqual(head["og:image:type"], ["image/gif"])
+        self.assertEqual(head["og:image:width"], ["1200"])
+        self.assertEqual(head["og:image:height"], ["630"])
+        self.assertEqual(head["twitter:image"], [self.default_url()])
+        # Article-specific art still wins even with a configured animation.
+        local = self.build(site, "local/index.html")
+        self.assertEqual(local["og:image"], ["https://example.test/images/article.png"])
+        # Updating GIF bytes updates only the animation URL.
+        (site / "static/images/small.gif").write_bytes(self.gif(1200, 628))
+        changed = self.build(site)
+        self.assertNotEqual(changed["og:image"], head["og:image"])
+        self.assertEqual(changed["og:image:height"], ["628"])
+        self.assertEqual(changed["twitter:image"], head["twitter:image"])
+
+    def test_still_default_works_without_animation_configuration(self):
+        site = self.fixture()
+        config = site / "hugo.toml"
+        config.write_text(config.read_text().replace(
+            'socialAnimation = "images/small.gif"\n', ""))
+        head = self.build(site)
+        self.assertEqual(head["og:image"], [self.default_url()])
+        self.assertEqual(head["twitter:image"], head["og:image"])
+
+    def test_missing_non_gif_directory_and_oversized_animation_fail_the_build(self):
+        for kind in ("missing", "not-gif", "directory", "oversized"):
+            with self.subTest(kind=kind):
+                site = self.fixture()
+                image = site / "static/images/small.gif"
+                if kind == "missing":
+                    image.unlink()
+                elif kind == "directory":
+                    image.unlink()
+                    image.mkdir()
+                elif kind == "oversized":
+                    image.write_bytes(self.gif(1200, 630) + b"\0" * 5_000_000)
+                else:
+                    image.write_bytes(b"not a GIF")
+                result = subprocess.run(
+                    ["hugo", "--source", str(site),
+                     "--destination", str(site / "build")],
+                    capture_output=True, text=True, timeout=20,
+                )
+                self.assertNotEqual(result.returncode, 0)
+                self.assertIn("socialAnimation:", result.stdout + result.stderr)
 
 
 if __name__ == "__main__":
