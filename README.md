@@ -114,7 +114,7 @@ Open Graph and default Twitter cards use the same full-size still from
 small animation captures are not suitable large-card previews. The on-page
 portrait animation is independent of this metadata.
 
-Local default preview URLs include a SHA-256-derived query version so replacing
+Static default preview URLs include a SHA-256-derived query version so replacing
 the image also changes the crawler cache key. Remote defaults and article-
 specific local, remote, and page-resource images retain their original URLs.
 Explicit Twitter overrides and app/player cards are preserved.

@@ -138,6 +138,17 @@ socialAnimationSize = 96
                          ["https://cdn.example.test/default.png"])
         self.assertEqual(head["twitter:image"], head["og:image"])
 
+    def test_bundle_default_collision_does_not_hash_unrelated_static_bytes(self):
+        site = self.fixture()
+        bundle = site / "content/collision"
+        (bundle / "images").mkdir(parents=True)
+        (bundle / "index.md").write_text('+++\ntitle = "Collision"\n+++\n')
+        (bundle / "images/card.png").write_bytes(b"bundle-specific default")
+        head = self.build(site, "collision/index.html")
+        self.assertEqual(head["og:image"],
+                         ["https://example.test/collision/images/card.png"])
+        self.assertEqual(head["twitter:image"], head["og:image"])
+
 
 if __name__ == "__main__":
     unittest.main(verbosity=2)
