@@ -1,4 +1,37 @@
 {{- $image := partial "share-image.html" . -}}
+{{- $url := $image.url -}}
+{{- $type := "image/png" -}}
+{{- $width := 1200 -}}
+{{- $height := 630 -}}
+{{/* A real full-size GIF can animate in supporting clients. Validate its bytes
+     and dimensions instead of trusting config or promoting a tiny capture.
+     Twitter deliberately continues to use share-image.html's still. */}}
+{{- if and (not $image.custom) .Site.Params.socialAnimation -}}
+  {{- $path := strings.TrimPrefix "/" .Site.Params.socialAnimation -}}
+  {{- $file := path.Join "static" $path -}}
+  {{- if not (fileExists $file) -}}
+    {{- errorf "socialAnimation: supply a local GIF at %s" $file -}}
+  {{- else if (os.Stat $file).IsDir -}}
+    {{- errorf "socialAnimation: %s must be a GIF file, not a directory" $file -}}
+  {{- else -}}
+    {{- $data := readFile $file -}}
+    {{- if not (or (hasPrefix $data "GIF87a") (hasPrefix $data "GIF89a")) -}}
+      {{- errorf "socialAnimation: %s is not a GIF" $file -}}
+    {{- else -}}
+      {{- $config := images.Config $file -}}
+      {{- if or (lt $config.Width 300) (lt $config.Height 200) -}}
+        {{- warnf "socialAnimation: ignoring undersized %s (%dx%d); using the still preview" $file $config.Width $config.Height -}}
+      {{- else if ge (len $data) 5000000 -}}
+        {{- errorf "socialAnimation: %s must be below 5,000,000 bytes" $file -}}
+      {{- else -}}
+        {{- $url = printf "%s?v=%s" ($path | absURL) (substr (sha256 $data) 0 12) -}}
+        {{- $type = "image/gif" -}}
+        {{- $width = $config.Width -}}
+        {{- $height = $config.Height -}}
+      {{- end -}}
+    {{- end -}}
+  {{- end -}}
+{{- end -}}
 <meta property="og:url" content="{{ .Permalink }}">
 <meta property="og:site_name" content="{{ .Site.Title }}">
 <meta property="og:title" content="{{ .Title | plainify }}">
@@ -13,21 +46,13 @@
 {{- else }}
 <meta property="og:type" content="website">
 {{- end }}
-{{/* There is no Slack-only image meta tag. Open Graph clients get a GIF
-     with a useful static first frame; Twitter gets the large still below.
+{{/* Emit exactly one suitable image: validated animation or the default still.
      Preserve specific article artwork rather than replacing it with a portrait. */}}
+<meta property="og:image" content="{{ $url }}">
 {{- if not $image.custom }}
-<meta property="og:image" content="{{ .Site.Params.socialAnimation | absURL }}">
-<meta property="og:image:type" content="image/gif">
-<meta property="og:image:width" content="{{ .Site.Params.socialAnimationSize }}">
-<meta property="og:image:height" content="{{ .Site.Params.socialAnimationSize }}">
-<meta property="og:image:alt" content="{{ $image.alt }}">
-{{- end }}
-<meta property="og:image" content="{{ $image.url }}">
-{{- if not $image.custom }}
-<meta property="og:image:type" content="image/png">
-<meta property="og:image:width" content="1200">
-<meta property="og:image:height" content="630">
+<meta property="og:image:type" content="{{ $type }}">
+<meta property="og:image:width" content="{{ $width }}">
+<meta property="og:image:height" content="{{ $height }}">
 {{- end }}
 <meta property="og:image:alt" content="{{ $image.alt }}">
 {{- with .Params.audio }}{{ range . | first 6 }}<meta property="og:audio" content="{{ . | absURL }}">{{ end }}{{ end }}

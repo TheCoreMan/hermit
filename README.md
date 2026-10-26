@@ -107,6 +107,29 @@ python3 tests/test_pixel_lava_assets.py
 Tests use temporary sites and explicit build destinations, without touching
 the consuming site's content, static assets, or deployment directory.
 
+#### Social previews
+
+Twitter cards use `params.socialImage` (a 1200×630 PNG). Open Graph uses the
+same still unless `params.socialAnimation` points to a suitable local GIF under
+`static/`. The optional GIF must have real GIF bytes, be at least 300×200 and
+below 5,000,000 bytes; use 1200×630 for wide previews. Dimensions are read from
+the image, not configuration. Undersized legacy captures fall back to the PNG;
+missing, non-GIF, directory, and oversized inputs fail the build.
+
+Only one default `og:image` is emitted. A full-size GIF can animate in supporting
+clients, while its clean first frame remains useful in clients that render a
+still. Animation is client-dependent, not guaranteed by Open Graph metadata.
+The on-page portrait animation is independent of this metadata.
+
+Static default PNG/GIF URLs include a SHA-256-derived query version so replacing
+an image also changes its crawler cache key. Remote still defaults and article-
+specific local, remote, and page-resource images retain their original URLs.
+Explicit Twitter overrides and app/player cards are preserved.
+
+```bash
+python3 tests/test_social_previews.py
+```
+
 ### More customizations
 
 #### Overriding templates
