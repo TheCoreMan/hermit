@@ -107,6 +107,22 @@ python3 tests/test_pixel_lava_assets.py
 Tests use temporary sites and explicit build destinations, without touching
 the consuming site's content, static assets, or deployment directory.
 
+#### Social previews
+
+Open Graph and default Twitter cards use the same full-size still from
+`params.socialImage` (a 1200×630 PNG). Only one default `og:image` is emitted:
+small animation captures are not suitable large-card previews. The on-page
+portrait animation is independent of this metadata.
+
+Local default preview URLs include a SHA-256-derived query version so replacing
+the image also changes the crawler cache key. Remote defaults and article-
+specific local, remote, and page-resource images retain their original URLs.
+Explicit Twitter overrides and app/player cards are preserved.
+
+```bash
+python3 tests/test_social_previews.py
+```
+
 ### More customizations
 
 #### Overriding templates

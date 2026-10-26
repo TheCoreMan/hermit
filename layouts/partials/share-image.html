@@ -20,6 +20,16 @@
 {{- with .Resources.GetMatch $path -}}
   {{- $url = .Permalink -}}
 {{- end -}}
+{{/* Give the default local image a content-derived cache key. Social crawlers
+     can retain failed/old image fetches independently of the page metadata.
+     Leave remote URLs and article-specific artwork untouched. */}}
+{{- if not $custom -}}
+  {{- $file := path.Join "static" (strings.TrimPrefix "/" $path) -}}
+  {{- if fileExists $file -}}
+    {{- $version := substr (sha256 (readFile $file)) 0 12 -}}
+    {{- $url = printf "%s?v=%s" $url $version -}}
+  {{- end -}}
+{{- end -}}
 {{- $alt := .Site.Params.socialImageAlt -}}
 {{- if $custom -}}
   {{- $alt = .Params.imageAlt | default .Title -}}
